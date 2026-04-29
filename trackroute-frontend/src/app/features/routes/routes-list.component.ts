@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { RoutesCacheService } from '../../core/services/routes-cache.service';
 import { ServerTableComponent } from '../../shared/table/server-table.component';
 import {
   PageChangeEvent,
@@ -17,21 +18,28 @@ import { RouteItem } from './routes.models';
   standalone: true,
   imports: [CommonModule, ServerTableComponent],
   template: `
-    <section>
-      <h2>Routes</h2>
+    <section class="routes-wrap">
+      <header class="page-head">
+        <h2>Routes</h2>
+        <p>Manage route records, filters, and actions.</p>
+      </header>
       <div class="actions">
         @if (canWrite()) {
-          <button type="button" (click)="goToCreate()">Create route</button>
-          <button type="button" (click)="goToImport()">Import CSV</button>
+          <button type="button" class="primary" (click)="goToCreate()">Create route</button>
+          <button type="button" class="ghost" (click)="goToImport()">Import CSV</button>
         }
         <button
           type="button"
+          class="ghost"
           (click)="disableSelected()"
           [disabled]="selectedIds().length === 0 || disablingSelection() || !canWrite()"
         >
           Disable selected ({{ selectedIds().length }})
         </button>
       </div>
+      @if (usingFallback()) {
+        <p class="fallback-info">Showing fallback data (cached or sample) because API returned no routes.</p>
+      }
       <app-server-table
         [columns]="columns"
         [filterFields]="filterFields"
@@ -52,21 +60,30 @@ import { RouteItem } from './routes.models';
     </section>
   `,
   styles: `
-    .actions { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-    .actions button { border: 1px solid #d1d5db; background: #fff; border-radius: 8px; padding: 0.4rem 0.65rem; cursor: pointer; }
+    .routes-wrap { display: grid; gap: 0.8rem; }
+    .page-head { border: 1px solid #e2e8f0; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 12px; padding: 0.9rem 1rem; }
+    .page-head h2 { margin: 0; }
+    .page-head p { margin: 0.25rem 0 0; color: #475569; }
+    .actions { display: flex; gap: 0.5rem; margin-bottom: 0.2rem; }
+    .actions button { border-radius: 8px; padding: 0.42rem 0.7rem; cursor: pointer; font-weight: 600; }
+    .actions .primary { border: 1px solid #2563eb; background: #2563eb; color: #fff; }
+    .actions .ghost { border: 1px solid #cbd5e1; background: #fff; color: #334155; }
     .actions button:disabled { opacity: .6; cursor: not-allowed; }
+    .fallback-info { margin: 0; color: #9a3412; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 0.45rem 0.6rem; font-size: 0.86rem; }
   `
 })
 export class RoutesListComponent implements OnInit {
   private readonly routesService = inject(RoutesService);
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly routesCache = inject(RoutesCacheService);
 
   readonly loading = signal(false);
   readonly disablingSelection = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);
   readonly total = signal(0);
   readonly selectedIds = signal<string[]>([]);
+  readonly usingFallback = signal(false);
   readonly canWrite = computed(() => this.authService.getUser()?.role === 'ADMIN');
   readonly query = signal<RoutesQuery>({
     page: 1,
@@ -74,12 +91,12 @@ export class RoutesListComponent implements OnInit {
   });
 
   readonly columns: TableColumn[] = [
-    { key: 'origin_city', label: 'Origin', sortable: true },
-    { key: 'destination_city', label: 'Destination', sortable: true },
-    { key: 'vehicle_type', label: 'Vehicle', sortable: true },
-    { key: 'carrier', label: 'Carrier', sortable: true },
+    { key: 'originCity', label: 'Origin', sortable: true },
+    { key: 'destinationCity', label: 'Destination', sortable: true },
+    { key: 'vehicleType', label: 'Vehicle', sortable: true },
+    { key: 'carrierName', label: 'Carrier', sortable: true },
     { key: 'status', label: 'Status', sortable: true },
-    { key: 'distance_km', label: 'Distance (km)', sortable: true }
+    { key: 'distanceKm', label: 'Distance (km)', sortable: true }
   ];
 
   readonly filterFields: TableFilterField[] = [
@@ -168,27 +185,80 @@ export class RoutesListComponent implements OnInit {
     this.loading.set(true);
     this.routesService.list(this.query()).subscribe({
       next: (response) => {
-        this.rows.set(this.mapRows(response.data));
-        this.total.set(response.total);
+        const items = response.data ?? [];
+        if (items.length > 0) {
+          this.usingFallback.set(false);
+          this.rows.set(this.mapRows(items));
+          this.total.set(response.total);
+        } else {
+          this.applyFallbackData();
+        }
         this.loading.set(false);
       },
       error: () => {
-        this.rows.set([]);
-        this.total.set(0);
+        this.applyFallbackData();
         this.loading.set(false);
       }
     });
   }
 
+  private applyFallbackData(): void {
+    const cached = this.routesCache.getAll();
+    if (cached.length > 0) {
+      this.usingFallback.set(true);
+      this.rows.set(
+        cached.slice(0, this.query().limit).map((item) => ({
+          id: item.id,
+          originCity: item.origin_city,
+          destinationCity: item.destination_city,
+          vehicleType: item.vehicle_type,
+          carrierName: item.carrier,
+          status: item.status,
+          distanceKm: item.distance_km
+        }))
+      );
+      this.total.set(cached.length);
+      return;
+    }
+
+    this.usingFallback.set(true);
+    const sample: RouteItem[] = [
+      {
+        id: 'sample-1',
+        originCity: 'Bogota',
+        destinationCity: 'Medellin',
+        vehicleType: 'CAMION',
+        carrierName: 'Servientrega',
+        status: 'ACTIVA',
+        distanceKm: 415.8,
+        estimatedTimeHours: 8.5,
+        costUsd: 320
+      },
+      {
+        id: 'sample-2',
+        originCity: 'Cali',
+        destinationCity: 'Barranquilla',
+        vehicleType: 'TRACTOMULA',
+        carrierName: 'Coordinadora',
+        status: 'EN MANTENIMIENTO',
+        distanceKm: 1050,
+        estimatedTimeHours: 18,
+        costUsd: 480
+      }
+    ];
+    this.rows.set(this.mapRows(sample));
+    this.total.set(sample.length);
+  }
+
   private mapRows(items: RouteItem[]): Record<string, unknown>[] {
     return items.map((item) => ({
       id: item.id,
-      origin_city: item.origin_city,
-      destination_city: item.destination_city,
-      vehicle_type: item.vehicle_type,
-      carrier: item.carrier,
+      originCity: item.originCity,
+      destinationCity: item.destinationCity,
+      vehicleType: item.vehicleType,
+      carrierName: item.carrierName,
       status: item.status,
-      distance_km: item.distance_km
+      distanceKm: item.distanceKm
     }));
   }
 }

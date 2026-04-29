@@ -54,13 +54,13 @@ describe('RoutesService', () => {
   it('should call create endpoint with payload', () => {
     apiSpy.post.mockReturnValue(of({ id: 'r-2' }));
     const payload = {
-      origin_city: 'Bogota',
-      destination_city: 'Cali',
-      distance_km: 460,
-      estimated_time_hours: 9,
-      vehicle_type: 'TRACTOMULA',
-      carrier: 'TCC',
-      cost_usd: 385,
+      originCity: 'Bogota',
+      destinationCity: 'Cali',
+      distanceKm: 460,
+      estimatedTimeHours: 9,
+      vehicleType: 'TRACTOMULA',
+      carrierName: 'TCC',
+      costUsd: 385,
       status: 'ACTIVA'
     };
     service.create(payload).subscribe();
@@ -70,13 +70,13 @@ describe('RoutesService', () => {
   it('should call update endpoint with payload', () => {
     apiSpy.put.mockReturnValue(of({ id: 'r-3' }));
     const payload = {
-      origin_city: 'Medellin',
-      destination_city: 'Cartagena',
-      distance_km: 700,
-      estimated_time_hours: 13,
-      vehicle_type: 'CAMION',
-      carrier: 'Servientrega',
-      cost_usd: 520,
+      originCity: 'Medellin',
+      destinationCity: 'Cartagena',
+      distanceKm: 700,
+      estimatedTimeHours: 13,
+      vehicleType: 'CAMION',
+      carrierName: 'Servientrega',
+      costUsd: 520,
       status: 'ACTIVA'
     };
     service.update('r-3', payload).subscribe();

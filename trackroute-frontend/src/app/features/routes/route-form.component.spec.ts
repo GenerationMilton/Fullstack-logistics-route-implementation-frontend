@@ -28,14 +28,14 @@ describe('RouteFormComponent', () => {
     routesServiceSpy.getById.mockReturnValue(
       of({
         id: '1',
-        origin_city: 'Bogota',
-        destination_city: 'Cali',
-        distance_km: 500,
-        estimated_time_hours: 10,
-        vehicle_type: 'CAMION',
-        carrier: 'TCC',
+        originCity: 'Bogota',
+        destinationCity: 'Cali',
+        distanceKm: 500,
+        estimatedTimeHours: 10,
+        vehicleType: 'CAMION',
+        carrierName: 'TCC',
         status: 'ACTIVA',
-        cost_usd: 200
+        costUsd: 200
       })
     );
 
@@ -58,13 +58,13 @@ describe('RouteFormComponent', () => {
 
   it('should create route when submitting valid create form', () => {
     component.form.setValue({
-      origin_city: 'Bogota',
-      destination_city: 'Medellin',
-      distance_km: 420,
-      estimated_time_hours: 8.5,
-      vehicle_type: 'CAMION',
-      carrier: 'TCC',
-      cost_usd: 300,
+      originCity: 'Bogota',
+      destinationCity: 'Medellin',
+      distanceKm: 420,
+      estimatedTimeHours: 8.5,
+      vehicleType: 'CAMION',
+      carrierName: 'TCC',
+      costUsd: 300,
       status: 'ACTIVA'
     });
 

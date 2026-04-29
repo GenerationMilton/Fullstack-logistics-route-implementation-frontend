@@ -1,13 +1,14 @@
 export interface RouteItem {
   id: string;
-  origin_city: string;
-  destination_city: string;
-  vehicle_type: string;
-  carrier: string;
+  originCity: string;
+  destinationCity: string;
+  vehicleType: string;
+  carrierName: string;
   status: string;
-  distance_km: number;
-  estimated_time_hours: number;
-  cost_usd: number;
+  distanceKm: number;
+  estimatedTimeHours: number;
+  costUsd: number;
+  createdAt?: string;
 }
 
 export interface RoutesListResponse {
@@ -17,13 +18,13 @@ export interface RoutesListResponse {
 }
 
 export interface RouteUpsertPayload {
-  origin_city: string;
-  destination_city: string;
-  distance_km: number;
-  estimated_time_hours: number;
-  vehicle_type: string;
-  carrier: string;
-  cost_usd: number;
+  originCity: string;
+  destinationCity: string;
+  distanceKm: number;
+  estimatedTimeHours: number;
+  vehicleType: string;
+  carrierName: string;
+  costUsd: number;
   status: string;
 }
 

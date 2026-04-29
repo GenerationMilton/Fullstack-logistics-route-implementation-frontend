@@ -112,17 +112,19 @@ type FilterFormShape = Record<string, FormControl<string>>;
     </section>
   `,
   styles: `
-    .table-wrapper { display: grid; gap: 0.75rem; }
+    .table-wrapper { display: grid; gap: 0.75rem; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.85rem; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); }
     .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; }
     .filters label { display: grid; gap: 0.25rem; font-size: 0.85rem; }
     .filters input { padding: 0.5rem 0.6rem; border-radius: 8px; border: 1px solid #d1d5db; }
     .table-scroll { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 0.65rem; border-bottom: 1px solid #f1f5f9; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; }
     .sort-btn { display: inline-flex; align-items: center; gap: 0.25rem; border: 0; background: transparent; cursor: pointer; font-weight: 600; }
     .pagination { display: flex; justify-content: space-between; align-items: center; }
     .page-actions { display: flex; gap: 0.5rem; }
-    .page-actions button { border: 1px solid #d1d5db; background: #fff; border-radius: 8px; padding: 0.35rem 0.6rem; cursor: pointer; }
+    .page-actions button { border: 1px solid #cbd5e1; background: #fff; border-radius: 8px; padding: 0.35rem 0.6rem; cursor: pointer; font-weight: 600; }
+    td button { border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 0.25rem 0.5rem; margin-right: 0.35rem; cursor: pointer; font-size: 0.78rem; }
   `
 })
 export class ServerTableComponent implements OnChanges {
