@@ -31,6 +31,8 @@ Start local dev server:
 npm run serve
 ```
 
+This command uses `proxy.conf.json`, so frontend calls to `/api/*` are forwarded to backend at `http://localhost:3000`.
+
 Default frontend URL:
 
 - `http://localhost:4200`
