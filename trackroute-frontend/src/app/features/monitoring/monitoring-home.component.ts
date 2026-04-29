@@ -17,9 +17,6 @@ import { MonitoringStateService } from './monitoring-state.service';
       <header class="page-head">
         <h2>Monitoring</h2>
         <p>Live tracking of active routes with auto-refresh every 30 seconds.</p>
-        @if (usingCache()) {
-          <span class="cache-badge">Using cached data</span>
-        }
       </header>
 
       @if (loading()) {
@@ -38,12 +35,17 @@ import { MonitoringStateService } from './monitoring-state.service';
       } @else {
         <div class="cards">
           @for (track of tracks(); track track.routeId) {
-            <article class="card">
-              <h3>Route {{ track.routeId }}</h3>
+            <article class="card" [class]="progressClass(track.progressPercent)">
+              <div class="card-head">
+                <h3>Route #{{ track.routeId }}</h3>
+                <span class="progress-pill">{{ track.progressPercent }}%</span>
+              </div>
               <p><strong>Last location:</strong> {{ track.lastLocation }}</p>
-              <p><strong>Progress:</strong> {{ track.progressPercent }}%</p>
               <p><strong>ETA:</strong> {{ track.etaMinutes }} min</p>
-              <p><strong>Timestamp:</strong> {{ track.timestamp }}</p>
+              <p><strong>Updated:</strong> {{ formatTimestamp(track.timestamp) }}</p>
+              <div class="progress-bar" aria-hidden="true">
+                <div class="progress-fill" [style.width.%]="track.progressPercent"></div>
+              </div>
             </article>
           }
         </div>
@@ -51,15 +53,30 @@ import { MonitoringStateService } from './monitoring-state.service';
     </section>
   `,
   styles: `
-    .monitoring-wrap { display: grid; gap: 0.9rem; }
-    .page-head { border: 1px solid #e2e8f0; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 12px; padding: 0.9rem 1rem; }
+    .monitoring-wrap { display: grid; gap: 1rem; }
+    .page-head { border: 1px solid #dbeafe; background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%); border-radius: 12px; padding: 0.95rem 1.1rem; }
     .page-head h2 { margin: 0; }
-    .page-head p { margin: 0.25rem 0 0; color: #475569; }
-    .cache-badge { display: inline-block; margin-top: 0.5rem; width: fit-content; background: #fff7ed; color: #9a3412; border: 1px solid #fdba74; border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.78rem; font-weight: 700; }
+    .page-head p { margin: 0.25rem 0 0; color: #475569; font-size: 0.95rem; }
     .cards { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.75rem; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); }
-    .card h3 { margin: 0 0 0.5rem; }
-    .card p { margin: 0.2rem 0; }
+    .card { border-radius: 12px; padding: 0.85rem; background: #fff; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06); border: 1px solid #e5e7eb; display: grid; gap: 0.4rem; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+    .card h3 { margin: 0; font-size: 1rem; }
+    .card p { margin: 0.08rem 0; color: #334155; font-size: 0.88rem; }
+    .progress-pill { font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 0.18rem 0.55rem; background: #e2e8f0; color: #0f172a; }
+    .progress-bar { margin-top: 0.35rem; height: 8px; border-radius: 999px; background: rgba(15, 23, 42, 0.08); overflow: hidden; }
+    .progress-fill { height: 100%; background: #3b82f6; }
+    .progress-low { border-color: #fca5a5; background: linear-gradient(180deg, #fff 0%, #fef2f2 100%); }
+    .progress-low .progress-pill { background: #fee2e2; color: #991b1b; }
+    .progress-low .progress-fill { background: #ef4444; }
+    .progress-mid { border-color: #fcd34d; background: linear-gradient(180deg, #fff 0%, #fffbeb 100%); }
+    .progress-mid .progress-pill { background: #fef3c7; color: #92400e; }
+    .progress-mid .progress-fill { background: #f59e0b; }
+    .progress-high { border-color: #86efac; background: linear-gradient(180deg, #fff 0%, #f0fdf4 100%); }
+    .progress-high .progress-pill { background: #dcfce7; color: #166534; }
+    .progress-high .progress-fill { background: #22c55e; }
+    .progress-complete { border-color: #93c5fd; background: linear-gradient(180deg, #fff 0%, #eff6ff 100%); }
+    .progress-complete .progress-pill { background: #dbeafe; color: #1d4ed8; }
+    .progress-complete .progress-fill { background: #2563eb; }
     .empty-state { border: 1px dashed #cbd5e1; background: #f8fafc; border-radius: 12px; padding: 1rem; }
     .empty-state h3 { margin: 0; }
     .empty-state p { margin: 0.35rem 0 0; color: #475569; }
@@ -95,5 +112,22 @@ export class MonitoringHomeComponent implements OnInit {
           this.monitoringState.setLoading(false);
         }
       });
+  }
+
+  progressClass(progress: number): string {
+    if (progress <= 20) return 'progress-low';
+    if (progress <= 60) return 'progress-mid';
+    if (progress <= 80) return 'progress-high';
+    return 'progress-complete';
+  }
+
+  formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return timestamp;
+    return new Intl.DateTimeFormat(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(date);
   }
 }

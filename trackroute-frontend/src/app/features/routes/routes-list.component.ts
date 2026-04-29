@@ -60,16 +60,16 @@ import { RouteItem } from './routes.models';
     </section>
   `,
   styles: `
-    .routes-wrap { display: grid; gap: 0.8rem; }
+    .routes-wrap { display: grid; gap: 0.8rem; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
     .page-head { border: 1px solid #e2e8f0; background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); border-radius: 12px; padding: 0.9rem 1rem; }
-    .page-head h2 { margin: 0; }
-    .page-head p { margin: 0.25rem 0 0; color: #475569; }
+    .page-head h2 { margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+    .page-head p { margin: 0.25rem 0 0; color: #475569; font-size: 0.95rem; }
     .actions { display: flex; gap: 0.5rem; margin-bottom: 0.2rem; }
     .actions button { border-radius: 8px; padding: 0.42rem 0.7rem; cursor: pointer; font-weight: 600; }
     .actions .primary { border: 1px solid #2563eb; background: #2563eb; color: #fff; }
     .actions .ghost { border: 1px solid #cbd5e1; background: #fff; color: #334155; }
     .actions button:disabled { opacity: .6; cursor: not-allowed; }
-    .fallback-info { margin: 0; color: #9a3412; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 0.45rem 0.6rem; font-size: 0.86rem; }
+    .fallback-info { margin: 0; color: #9a3412; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 0.45rem 0.6rem; font-size: 0.9rem; font-weight: 500; }
   `
 })
 export class RoutesListComponent implements OnInit {

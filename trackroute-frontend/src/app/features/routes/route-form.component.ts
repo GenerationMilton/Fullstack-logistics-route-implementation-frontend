@@ -41,11 +41,11 @@ import { RoutesService } from './routes.service';
   `,
   styles: `
     .card { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04); padding: 1rem; }
-    .form-wrap { max-width: 840px; display: grid; gap: 0.85rem; }
-    .head h2 { margin: 0; }
-    .head p { margin: 0.25rem 0 0; color: #475569; }
+    .form-wrap { max-width: 840px; display: grid; gap: 0.85rem; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    .head h2 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+    .head p { margin: 0.25rem 0 0; color: #475569; font-size: 0.95rem; }
     form { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 0.75rem; }
-    label { display: grid; gap: 0.25rem; font-size: 0.9rem; color: #0f172a; }
+    label { display: grid; gap: 0.25rem; font-size: 0.92rem; color: #0f172a; font-weight: 500; }
     input { padding: 0.6rem; border-radius: 8px; border: 1px solid #d1d5db; }
     .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 0.5rem; }
     button { border-radius: 8px; padding: 0.45rem 0.75rem; cursor: pointer; font-weight: 600; }

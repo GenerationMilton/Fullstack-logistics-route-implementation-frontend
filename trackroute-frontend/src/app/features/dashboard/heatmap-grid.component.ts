@@ -24,13 +24,13 @@ import { DashboardHeatmapItem } from './dashboard.models';
     </section>
   `,
   styles: `
-    .panel { border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.75rem; background: #fff; }
-    .panel h3 { margin: 0 0 0.5rem; }
+    .panel { border: 1px solid #e5e7eb; border-radius: 12px; padding: 0.9rem; background: #fff; box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    .panel h3 { margin: 0 0 0.65rem; }
     .empty { margin: 0; color: #64748b; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem; }
-    .cell { border-radius: 8px; padding: 0.6rem; border: 1px solid #dbeafe; display: grid; gap: 0.2rem; }
-    .region { font-size: 0.85rem; color: #1e293b; }
-    .count { font-size: 1rem; color: #0f172a; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem; }
+    .cell { border-radius: 10px; padding: 0.65rem; border: 1px solid rgba(191, 219, 254, 0.9); display: grid; gap: 0.25rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35); }
+    .region { font-size: 0.84rem; color: #0f172a; font-weight: 600; }
+    .count { font-size: 1.05rem; color: #0f172a; }
   `
 })
 export class HeatmapGridComponent {
@@ -38,7 +38,7 @@ export class HeatmapGridComponent {
 
   cellColor(count: number): string {
     const max = Math.max(1, ...this.items.map((item) => item.count));
-    const intensity = Math.max(0.15, count / max);
-    return `rgba(59, 130, 246, ${intensity.toFixed(2)})`;
+    const intensity = Math.max(0.2, count / max);
+    return `linear-gradient(135deg, rgba(191,219,254,0.6), rgba(59,130,246,${intensity.toFixed(2)}))`;
   }
 }
