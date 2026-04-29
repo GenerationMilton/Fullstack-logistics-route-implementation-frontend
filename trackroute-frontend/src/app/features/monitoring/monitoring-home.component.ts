@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActiveRouteTrack } from './monitoring.models';
 import { MonitoringService } from './monitoring.service';
+import { MonitoringStateService } from './monitoring-state.service';
 
 @Component({
   selector: 'app-monitoring-home',
@@ -46,10 +47,11 @@ import { MonitoringService } from './monitoring.service';
 })
 export class MonitoringHomeComponent implements OnInit {
   private readonly monitoringService = inject(MonitoringService);
+  private readonly monitoringState = inject(MonitoringStateService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly loading = signal(true);
-  readonly tracks = signal<ActiveRouteTrack[]>([]);
+  readonly loading = toSignal(this.monitoringState.loading$, { initialValue: true });
+  readonly tracks = toSignal(this.monitoringState.tracks$, { initialValue: [] });
 
   ngOnInit(): void {
     timer(0, 30000)
@@ -59,12 +61,12 @@ export class MonitoringHomeComponent implements OnInit {
       )
       .subscribe({
         next: (data) => {
-          this.tracks.set(data);
-          this.loading.set(false);
+          this.monitoringState.setTracks(data);
+          this.monitoringState.setLoading(false);
         },
         error: () => {
-          this.tracks.set([]);
-          this.loading.set(false);
+          this.monitoringState.setTracks([]);
+          this.monitoringState.setLoading(false);
         }
       });
   }

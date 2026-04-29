@@ -1,13 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   DashboardHeatmapItem,
   DashboardStatusTotal,
-  DashboardSummaryResponse,
   DashboardTopRoute
 } from './dashboard.models';
 import { DashboardService } from './dashboard.service';
+import { DashboardStateService } from './dashboard-state.service';
 
 @Component({
   selector: 'app-dashboard-home',
@@ -87,12 +88,19 @@ import { DashboardService } from './dashboard.service';
 export class DashboardHomeComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly dashboardService = inject(DashboardService);
+  private readonly dashboardState = inject(DashboardStateService);
 
-  readonly loading = signal(false);
-  readonly summary = signal<DashboardSummaryResponse | null>(null);
-  readonly totalsByStatus = signal<DashboardStatusTotal[]>([]);
-  readonly topExpensiveRoutes = signal<DashboardTopRoute[]>([]);
-  readonly heatmapByRegion = signal<DashboardHeatmapItem[]>([]);
+  readonly loading = toSignal(this.dashboardState.loading$, { initialValue: false });
+  readonly summary = toSignal(this.dashboardState.summary$, { initialValue: null });
+  readonly totalsByStatus = computed<DashboardStatusTotal[]>(
+    () => this.summary()?.totalsByStatus ?? []
+  );
+  readonly topExpensiveRoutes = computed<DashboardTopRoute[]>(
+    () => this.summary()?.topExpensiveRoutes ?? []
+  );
+  readonly heatmapByRegion = computed<DashboardHeatmapItem[]>(
+    () => this.summary()?.activeHeatmapByRegion ?? []
+  );
 
   readonly form = this.fb.nonNullable.group({
     from: ['', Validators.required],
@@ -116,21 +124,15 @@ export class DashboardHomeComponent implements OnInit {
     const fromIso = `${from}T00:00:00Z`;
     const toIso = `${to}T23:59:59Z`;
 
-    this.loading.set(true);
+    this.dashboardState.setLoading(true);
     this.dashboardService.getSummary(fromIso, toIso).subscribe({
       next: (response) => {
-        this.summary.set(response);
-        this.totalsByStatus.set(response.totalsByStatus ?? []);
-        this.topExpensiveRoutes.set(response.topExpensiveRoutes ?? []);
-        this.heatmapByRegion.set(response.activeHeatmapByRegion ?? []);
-        this.loading.set(false);
+        this.dashboardState.setSummary(response);
+        this.dashboardState.setLoading(false);
       },
       error: () => {
-        this.summary.set(null);
-        this.totalsByStatus.set([]);
-        this.topExpensiveRoutes.set([]);
-        this.heatmapByRegion.set([]);
-        this.loading.set(false);
+        this.dashboardState.setSummary(null);
+        this.dashboardState.setLoading(false);
       }
     });
   }
