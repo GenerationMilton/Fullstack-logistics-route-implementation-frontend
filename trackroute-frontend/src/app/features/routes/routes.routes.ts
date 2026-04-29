@@ -15,6 +15,13 @@ export const ROUTES_ROUTES: Routes = [
       import('./route-form.component').then((m) => m.RouteFormComponent)
   },
   {
+    path: 'import',
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] },
+    loadComponent: () =>
+      import('./import-csv.component').then((m) => m.ImportCsvComponent)
+  },
+  {
     path: ':id/edit',
     canActivate: [roleGuard],
     data: { roles: ['ADMIN'] },

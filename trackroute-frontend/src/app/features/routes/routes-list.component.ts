@@ -22,6 +22,7 @@ import { RouteItem } from './routes.models';
       <div class="actions">
         @if (canWrite()) {
           <button type="button" (click)="goToCreate()">Create route</button>
+          <button type="button" (click)="goToImport()">Import CSV</button>
         }
         <button
           type="button"
@@ -128,6 +129,10 @@ export class RoutesListComponent implements OnInit {
 
   goToCreate(): void {
     this.router.navigate(['/routes/new']);
+  }
+
+  goToImport(): void {
+    this.router.navigate(['/routes/import']);
   }
 
   disableSelected(): void {

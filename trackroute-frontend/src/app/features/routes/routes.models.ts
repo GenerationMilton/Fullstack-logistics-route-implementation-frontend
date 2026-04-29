@@ -26,3 +26,9 @@ export interface RouteUpsertPayload {
   cost_usd: number;
   status: string;
 }
+
+export interface ImportSummary {
+  imported: number;
+  failed: number;
+  errors: string[];
+}

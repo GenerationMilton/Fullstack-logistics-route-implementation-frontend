@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
-import { RouteItem, RoutesListResponse, RouteUpsertPayload } from './routes.models';
+import {
+  ImportSummary,
+  RouteItem,
+  RoutesListResponse,
+  RouteUpsertPayload
+} from './routes.models';
 
 export interface RoutesQuery {
   page: number;
@@ -45,5 +50,11 @@ export class RoutesService {
 
   disable(id: string): Observable<unknown> {
     return this.api.patch<unknown>(`/api/v1/routes/${id}/disable`);
+  }
+
+  importCsv(file: File): Observable<ImportSummary> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.api.post<ImportSummary, FormData>('/api/v1/routes/import', formData);
   }
 }
