@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -34,6 +34,9 @@ import { DashboardStateService } from './dashboard-state.service';
           {{ loading() ? 'Loading...' : 'Apply range' }}
         </button>
       </form>
+      @if (rangeError()) {
+        <p class="error">{{ rangeError() }}</p>
+      }
 
       @if (summary()) {
         <div class="grid">
@@ -73,6 +76,7 @@ import { DashboardStateService } from './dashboard-state.service';
   styles: `
     .dashboard-wrap { display: grid; gap: 0.75rem; }
     .hint { color: #475569; margin: 0; }
+    .error { color: #b91c1c; margin: 0; }
     .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; }
     label { display: grid; gap: 0.25rem; font-size: 0.9rem; }
     input { border: 1px solid #d1d5db; border-radius: 8px; padding: 0.4rem 0.5rem; }
@@ -92,6 +96,7 @@ export class DashboardHomeComponent implements OnInit {
 
   readonly loading = toSignal(this.dashboardState.loading$, { initialValue: false });
   readonly summary = toSignal(this.dashboardState.summary$, { initialValue: null });
+  readonly rangeError = signal('');
   readonly totalsByStatus = computed<DashboardStatusTotal[]>(
     () => this.summary()?.totalsByStatus ?? []
   );
@@ -121,6 +126,11 @@ export class DashboardHomeComponent implements OnInit {
     if (this.form.invalid) return;
 
     const { from, to } = this.form.getRawValue();
+    if (from > to) {
+      this.rangeError.set('Invalid range: "from" must be before or equal to "to".');
+      return;
+    }
+    this.rangeError.set('');
     const fromIso = `${from}T00:00:00Z`;
     const toIso = `${to}T23:59:59Z`;
 
