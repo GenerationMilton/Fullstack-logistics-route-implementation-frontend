@@ -9,11 +9,18 @@ import {
 } from './dashboard.models';
 import { DashboardService } from './dashboard.service';
 import { DashboardStateService } from './dashboard-state.service';
+import { StatusDistributionComponent } from './status-distribution.component';
+import { HeatmapGridComponent } from './heatmap-grid.component';
 
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    StatusDistributionComponent,
+    HeatmapGridComponent
+  ],
   template: `
     <section class="dashboard-wrap">
       <h2>Dashboard</h2>
@@ -40,14 +47,7 @@ import { DashboardStateService } from './dashboard-state.service';
 
       @if (summary()) {
         <div class="grid">
-          <article class="panel">
-            <h3>Total routes by status</h3>
-            <ul>
-              @for (item of totalsByStatus(); track item.status) {
-                <li>{{ item.status }}: {{ item.count }}</li>
-              }
-            </ul>
-          </article>
+          <app-status-distribution [items]="totalsByStatus()" />
 
           <article class="panel">
             <h3>Top 5 expensive routes</h3>
@@ -61,14 +61,7 @@ import { DashboardStateService } from './dashboard-state.service';
             </ul>
           </article>
 
-          <article class="panel">
-            <h3>Active routes heatmap by region</h3>
-            <ul>
-              @for (region of heatmapByRegion(); track region.region) {
-                <li>{{ region.region }}: {{ region.count }}</li>
-              }
-            </ul>
-          </article>
+          <app-heatmap-grid [items]="heatmapByRegion()" />
         </div>
       }
     </section>
