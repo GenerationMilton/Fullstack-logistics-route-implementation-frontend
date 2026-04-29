@@ -64,7 +64,8 @@
               "buildTarget": "trackroute-frontend:build:production"
             },
             "development": {
-              "buildTarget": "trackroute-frontend:build:development"
+              "buildTarget": "trackroute-frontend:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

@@ -1,59 +1,94 @@
-# TrackrouteFrontend
+# TrackRoute Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.8.
+Angular frontend for logistics route management, integrated with Fastify backend APIs under `/api/v1`.
 
-## Development server
+## Tech stack
 
-To start a local development server, run:
+- Angular (standalone components)
+- Reactive forms
+- Signals + RxJS/BehaviorSubject
+- HTTP interceptors (auth + correlation-id)
+- Role-based route guards (`ADMIN`, `OPERATOR`)
+- Vitest test runner
 
-```bash
-ng serve
-```
+## Prerequisites
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js 20+
+- npm 10+
+- Backend API running (default expected at `http://localhost:3000`)
 
-## Code scaffolding
+## Run locally
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Install dependencies:
 
 ```bash
-ng build
+npm install
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Start local dev server:
 
 ```bash
-ng test
+npm run serve
 ```
 
-## Running end-to-end tests
+This command uses `proxy.conf.json`, so frontend calls to `/api/*` are forwarded to backend at `http://localhost:3000`.
 
-For end-to-end (e2e) testing, run:
+Default frontend URL:
+
+- `http://localhost:4200`
+
+## Build
+
+Development build:
 
 ```bash
-ng e2e
+npm run build
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Production build:
 
-## Additional Resources
+```bash
+npm run build:prod
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Tests
+
+Run unit tests:
+
+```bash
+npm run test
+```
+
+Run tests with coverage:
+
+```bash
+npm run test:cov
+```
+
+## Frontend features implemented
+
+- Authentication (`/api/v1/auth/login`) with JWT storage, guards, and role-aware UI.
+- Routes management:
+  - list with server-side pagination/filter/sort
+  - create/edit
+  - soft disable (`PATCH /api/v1/routes/:id/disable`)
+  - bulk disable from list
+- CSV import UI (`POST /api/v1/routes/import`) with preview and summary.
+- Monitoring panel polling every 30s (`GET /api/v1/routes/active/track`).
+- Dashboard with date-range filter (`GET /api/v1/dashboard/summary?from=&to=`).
+
+## API request collection
+
+A ready-to-run HTTP collection is included at:
+
+- `api-requests.http`
+
+Use it in VS Code/Cursor REST Client extensions to call backend endpoints.
+
+## Dataset
+
+Reference dataset is expected at workspace root:
+
+- `../data/routes_dataset.csv`
+
+The import UI supports large CSV files and previews only the first chunk/rows for performance.

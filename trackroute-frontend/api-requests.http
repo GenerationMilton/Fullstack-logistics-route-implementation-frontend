@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:3000
+@token = REPLACE_WITH_JWT
+@routeId = REPLACE_WITH_ROUTE_ID
+
+### Health
+GET {{baseUrl}}/health
+
+### Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin_password_change_me"
+}
+
+### Current user
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{token}}
+
+### List routes (server-side filters/sort/pagination)
+GET {{baseUrl}}/api/v1/routes?page=1&limit=20&origin=Bogota&destination=&vehicle=&status=ACTIVA&carrier=&sort=distance_km:asc
+Authorization: Bearer {{token}}
+
+### Get route by id
+GET {{baseUrl}}/api/v1/routes/{{routeId}}
+Authorization: Bearer {{token}}
+
+### Create route
+POST {{baseUrl}}/api/v1/routes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin_city": "Bogota",
+  "destination_city": "Cali",
+  "distance_km": 460,
+  "estimated_time_hours": 9,
+  "vehicle_type": "TRACTOMULA",
+  "carrier": "TCC",
+  "cost_usd": 385,
+  "status": "ACTIVA"
+}
+
+### Update route
+PUT {{baseUrl}}/api/v1/routes/{{routeId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "origin_city": "Bogota",
+  "destination_city": "Medellin",
+  "distance_km": 415.8,
+  "estimated_time_hours": 8.5,
+  "vehicle_type": "CAMION",
+  "carrier": "Servientrega",
+  "cost_usd": 320,
+  "status": "ACTIVA"
+}
+
+### Disable route (soft delete)
+PATCH {{baseUrl}}/api/v1/routes/{{routeId}}/disable
+Authorization: Bearer {{token}}
+
+### Import CSV (field name must be file)
+POST {{baseUrl}}/api/v1/routes/import
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="routes_dataset.csv"
+Content-Type: text/csv
+
+< ./data/routes_dataset.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Active tracking (monitoring panel)
+GET {{baseUrl}}/api/v1/routes/active/track
+Authorization: Bearer {{token}}
+
+### Dashboard summary by date range
+GET {{baseUrl}}/api/v1/dashboard/summary?from=2026-01-01T00:00:00Z&to=2026-01-31T23:59:59Z
+Authorization: Bearer {{token}}
+
+### Export filtered routes (CSV)
+GET {{baseUrl}}/api/v1/routes/export?status=ACTIVA
+Authorization: Bearer {{token}}
