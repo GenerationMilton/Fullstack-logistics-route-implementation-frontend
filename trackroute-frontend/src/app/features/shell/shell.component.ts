@@ -13,9 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
       <nav>
         <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
         <a routerLink="/monitoring" routerLinkActive="active">Monitoring</a>
-        @if (isAdmin()) {
         <a routerLink="/routes" routerLinkActive="active">Routes</a>
-        }
       </nav>
       <div class="right">
         <span>{{ userLabel() }}</span>
@@ -40,7 +38,6 @@ import { AuthService } from '../../core/services/auth.service';
 export class ShellComponent {
   private readonly authService = inject(AuthService);
 
-  readonly isAdmin = computed(() => this.authService.getUser()?.role === 'ADMIN');
   readonly userLabel = computed(
     () => `${this.authService.getUser()?.username ?? 'unknown'} (${this.authService.getUser()?.role ?? '-'})`
   );

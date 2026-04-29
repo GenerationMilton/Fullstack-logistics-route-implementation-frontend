@@ -1,4 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 import { ServerTableComponent } from '../../shared/table/server-table.component';
 import {
   PageChangeEvent,
@@ -12,10 +15,22 @@ import { RouteItem } from './routes.models';
 @Component({
   selector: 'app-routes-list',
   standalone: true,
-  imports: [ServerTableComponent],
+  imports: [CommonModule, ServerTableComponent],
   template: `
     <section>
       <h2>Routes</h2>
+      <div class="actions">
+        @if (canWrite()) {
+          <button type="button" (click)="goToCreate()">Create route</button>
+        }
+        <button
+          type="button"
+          (click)="disableSelected()"
+          [disabled]="selectedIds().length === 0 || disablingSelection() || !canWrite()"
+        >
+          Disable selected ({{ selectedIds().length }})
+        </button>
+      </div>
       <app-server-table
         [columns]="columns"
         [filterFields]="filterFields"
@@ -25,19 +40,33 @@ import { RouteItem } from './routes.models';
         [pageSize]="query().limit"
         [loading]="loading()"
         [serverSide]="true"
+        [selectable]="canWrite()"
+        [actionsEnabled]="canWrite()"
         (pageChange)="onPageChange($event)"
         (sortChange)="onSortChange($event)"
         (filterChange)="onFilterChange($event)"
+        (rowAction)="onRowAction($event)"
+        (selectionChange)="selectedIds.set($event)"
       />
     </section>
+  `,
+  styles: `
+    .actions { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .actions button { border: 1px solid #d1d5db; background: #fff; border-radius: 8px; padding: 0.4rem 0.65rem; cursor: pointer; }
+    .actions button:disabled { opacity: .6; cursor: not-allowed; }
   `
 })
 export class RoutesListComponent implements OnInit {
   private readonly routesService = inject(RoutesService);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
 
   readonly loading = signal(false);
+  readonly disablingSelection = signal(false);
   readonly rows = signal<Record<string, unknown>[]>([]);
   readonly total = signal(0);
+  readonly selectedIds = signal<string[]>([]);
+  readonly canWrite = computed(() => this.authService.getUser()?.role === 'ADMIN');
   readonly query = signal<RoutesQuery>({
     page: 1,
     limit: 20
@@ -77,6 +106,57 @@ export class RoutesListComponent implements OnInit {
   onFilterChange(filters: Record<string, string>): void {
     this.query.update((q) => ({ ...q, page: 1, ...filters }));
     this.fetch();
+  }
+
+  onRowAction(event: { action: string; row: Record<string, unknown> }): void {
+    const id = String(event.row['id'] ?? '');
+    if (!id) return;
+
+    if (event.action === 'edit') {
+      if (!this.canWrite()) return;
+      this.router.navigate(['/routes', id, 'edit']);
+      return;
+    }
+
+    if (event.action === 'disable') {
+      if (!this.canWrite()) return;
+      this.routesService.disable(id).subscribe({
+        next: () => this.fetch()
+      });
+    }
+  }
+
+  goToCreate(): void {
+    this.router.navigate(['/routes/new']);
+  }
+
+  disableSelected(): void {
+    if (!this.canWrite()) return;
+    const ids = this.selectedIds();
+    if (ids.length === 0) return;
+
+    this.disablingSelection.set(true);
+    let pending = ids.length;
+
+    for (const id of ids) {
+      this.routesService.disable(id).subscribe({
+        complete: () => {
+          pending -= 1;
+          if (pending === 0) {
+            this.disablingSelection.set(false);
+            this.selectedIds.set([]);
+            this.fetch();
+          }
+        },
+        error: () => {
+          pending -= 1;
+          if (pending === 0) {
+            this.disablingSelection.set(false);
+            this.fetch();
+          }
+        }
+      });
+    }
   }
 
   private fetch(): void {

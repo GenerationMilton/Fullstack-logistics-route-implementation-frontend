@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
-import { RoutesListResponse } from './routes.models';
+import { RouteItem, RoutesListResponse, RouteUpsertPayload } from './routes.models';
 
 export interface RoutesQuery {
   page: number;
@@ -29,5 +29,21 @@ export class RoutesService {
       carrier: query.carrier,
       sort: query.sort
     });
+  }
+
+  getById(id: string): Observable<RouteItem> {
+    return this.api.get<RouteItem>(`/api/v1/routes/${id}`);
+  }
+
+  create(payload: RouteUpsertPayload): Observable<RouteItem> {
+    return this.api.post<RouteItem, RouteUpsertPayload>('/api/v1/routes', payload);
+  }
+
+  update(id: string, payload: RouteUpsertPayload): Observable<RouteItem> {
+    return this.api.put<RouteItem, RouteUpsertPayload>(`/api/v1/routes/${id}`, payload);
+  }
+
+  disable(id: string): Observable<unknown> {
+    return this.api.patch<unknown>(`/api/v1/routes/${id}/disable`);
   }
 }

@@ -18,4 +18,16 @@ export class ApiService {
 
     return this.http.get<T>(url, { params: httpParams });
   }
+
+  post<TResponse, TBody = unknown>(url: string, body: TBody): Observable<TResponse> {
+    return this.http.post<TResponse>(url, body);
+  }
+
+  put<TResponse, TBody = unknown>(url: string, body: TBody): Observable<TResponse> {
+    return this.http.put<TResponse>(url, body);
+  }
+
+  patch<TResponse, TBody = unknown>(url: string, body?: TBody): Observable<TResponse> {
+    return this.http.patch<TResponse>(url, body ?? ({} as TBody));
+  }
 }

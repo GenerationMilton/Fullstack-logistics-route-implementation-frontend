@@ -53,6 +53,9 @@ type FilterFormShape = Record<string, FormControl<string>>;
                   }
                 </th>
               }
+              @if (selectable) {
+                <th>Select</th>
+              }
               <th>Actions</th>
             </tr>
           </thead>
@@ -60,11 +63,11 @@ type FilterFormShape = Record<string, FormControl<string>>;
           <tbody>
             @if (loading) {
               <tr>
-                <td [attr.colspan]="columns.length + 1">Loading...</td>
+                <td [attr.colspan]="columns.length + (selectable ? 2 : 1)">Loading...</td>
               </tr>
             } @else if (rows.length === 0) {
               <tr>
-                <td [attr.colspan]="columns.length + 1">No data found.</td>
+                <td [attr.colspan]="columns.length + (selectable ? 2 : 1)">No data found.</td>
               </tr>
             } @else {
               @for (row of rows; track row['id'] ?? $index) {
@@ -72,10 +75,23 @@ type FilterFormShape = Record<string, FormControl<string>>;
                   @for (column of columns; track column.key) {
                     <td>{{ row[column.key] }}</td>
                   }
+                  @if (selectable) {
+                    <td>
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(row)"
+                        (change)="toggleRowSelection(row)"
+                        aria-label="Select row"
+                      />
+                    </td>
+                  }
                   <td>
-                    <button type="button" (click)="rowAction.emit({ action: 'view', row })">
-                      View
-                    </button>
+                    @if (actionsEnabled) {
+                      <button type="button" (click)="rowAction.emit({ action: 'edit', row })">Edit</button>
+                      <button type="button" (click)="rowAction.emit({ action: 'disable', row })">Disable</button>
+                    } @else {
+                      <span>-</span>
+                    }
                   </td>
                 </tr>
               }
@@ -120,14 +136,18 @@ export class ServerTableComponent implements OnChanges {
   @Input() page = 1;
   @Input() loading = false;
   @Input() serverSide = true;
+  @Input() selectable = false;
+  @Input() actionsEnabled = true;
 
   @Output() pageChange = new EventEmitter<PageChangeEvent>();
   @Output() sortChange = new EventEmitter<SortChangeEvent>();
   @Output() filterChange = new EventEmitter<Record<string, string>>();
   @Output() rowAction = new EventEmitter<{ action: string; row: Record<string, unknown> }>();
+  @Output() selectionChange = new EventEmitter<string[]>();
 
   filtersForm = new FormGroup<FilterFormShape>({});
   activeSort: { key: string; direction: SortDirection } | null = null;
+  selectedIds = new Set<string>();
 
   get totalPages(): number {
     return Math.max(1, Math.ceil(this.total / this.pageSize));
@@ -183,5 +203,23 @@ export class ServerTableComponent implements OnChanges {
         }
         this.filterChange.emit(normalized);
       });
+  }
+
+  isSelected(row: Record<string, unknown>): boolean {
+    const id = String(row['id'] ?? '');
+    return this.selectedIds.has(id);
+  }
+
+  toggleRowSelection(row: Record<string, unknown>): void {
+    const id = String(row['id'] ?? '');
+    if (!id) return;
+
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+
+    this.selectionChange.emit(Array.from(this.selectedIds));
   }
 }
